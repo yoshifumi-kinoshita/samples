@@ -1,0 +1,5 @@
+How to compile
+	# make -C /usr/src/kernels/`uname -r` M=`pwd`
+
+How to use
+	# insmod lockup.ko
