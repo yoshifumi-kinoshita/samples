@@ -1,12 +1,13 @@
 #!/bin/env python
 
+import sys
 import httplib
 import re
 import smtplib
 
 URL='http://nttxstore.jp/_II_HP13894432'
 FROM='ykinoshi@redhat.com'
-TO='ykinoshi@redhat.com'
+TO= sys.argv[1] if len(sys.argv)>1 else 'ykinoshi@redhat.com'
 SUBJECT='ML110 G7'
 
 
