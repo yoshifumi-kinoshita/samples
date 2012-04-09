@@ -2,7 +2,8 @@
 
 import sys
 import smtplib
-import datetime
+import time
+from datetime import datetime
 
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
@@ -17,7 +18,7 @@ USER='ykinoshi'
 
 def main():
 	text = 'text'
-	html = '<html><body><img src="https://metrics.gss.redhat.com/kcs/individual_radar_chart/%s/week/%s/radar_chart.png"></body></html>' % (USER, datetime.datetime.today().strftime("%Y-%m-%d") )
+	html = '<html><body><img src="https://metrics.gss.redhat.com/kcs/individual_radar_chart/%s/week/%s/radar_chart.png"></body></html>' % (USER, datetime.fromtimestamp(time.time()- (datetime.today().isoweekday()+7)*60*60*24).strftime("%Y-%m-%d") )
 	send( FROM, TO, SUBJECT, text, html );
 
 def send(from_addr, to_addr, subject, text, html):
