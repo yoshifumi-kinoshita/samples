@@ -1,0 +1,70 @@
+#include <errno.h>
+#include <stdio.h>
+#include <netdb.h>
+#include <string.h>
+#include <unistd.h>
+#include <ctype.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#include <net/route.h>
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
+#include <linux/if_packet.h>
+#include <linux/if_ether.h>
+
+int main(int argc, char **argv){
+  int rawfd;
+  struct ether_arp arpbody;
+  struct sockaddr_ll ll_from, ll_to;
+  struct sockaddr_in saddr;
+  struct ifreq ifreq;
+
+  arpbody.arp_hrd = htons(ARPHRD_ETHER);
+  arpbody.arp_pro = htons(ETH_P_IP);
+  arpbody.arp_hln = 6;
+  arpbody.arp_pln = 4;
+  arpbody.arp_op  = htons(ARPOP_REQUEST);
+  //arpbody.arp_sha = NULL;
+  //arpbody.arp_tha = NULL;
+  //arpbody.arp_spa = inet_addr("1.1.1.1");
+  //arpbody.arp_tpa = inet_addr("0.0.0.0");
+  *((int *)&(arpbody.arp_spa[0])) = inet_addr("1.1.1.1");
+  *((int *)&(arpbody.arp_tpa[0])) = inet_addr("0.0.0.0");
+
+  memset(&ifreq, '\0', (len));
+  
+  ll_from.sll_family = AF_PACKET;
+  ll_from.sll_protocol = 0; //htons(ETH_P_ARP);
+  ll_from.sll_ifindex = NULL;
+  ll_from.sll_hatype = 0; //ARPHRD_ETHER;
+  ll_from.sll_pkttype = 0; //PACKET_BROADCAST;
+  ll_from.sll_halen = ETH_ALEN;
+  //ll_from.sll_addr = NULL;
+  
+  ll_to.sll_family = AF_PACKET;
+  ll_to.sll_protocol = 0; //htons(ETH_P_ARP);
+  ll_to.sll_ifindex = NULL;
+  ll_to.sll_hatype = 0; //ARPHRD_ETHER;
+  ll_to.sll_pkttype = 0; //PACKET_BROADCAST;
+  ll_to.sll_halen = ETH_ALEN;
+  //ll_to.sll_addr = NULL;
+  
+  if ((rawfd = socket(PF_PACKET, SOCK_DGRAM, htons(ETH_P_ARP))) < 0) {
+	perror("raw socket creatin");
+	exit(1);
+  } 
+  
+  if (bind(rawfd, (struct sockaddr *)&ll_from, sizeof(ll_from)) < 0) {
+	perror("bind");
+	exit(1);
+  }
+  
+  return 0;
+  
+}

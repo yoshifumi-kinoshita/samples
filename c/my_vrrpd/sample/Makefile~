@@ -1,0 +1,46 @@
+#
+# 
+#
+
+#PREFIX	= /usr/local
+
+# for build
+
+BASE 	= .
+
+SRC 	= arp_send.c
+
+OBJ	= arp_send.o
+
+TARGET	= arp_send
+
+CC 	=  gcc
+
+
+#CFLAGS 	=  -Wall -g
+CFLAGS 	=  -O2
+
+INCDIRS = -I.
+CFLAGS	+= $(INCDIRS)
+
+LIBDIRS = 
+LIBS	= 
+
+#
+# build rules
+#
+
+ALL:	${TARGET}
+
+${TARGET}: ${OBJ}
+	@echo "Building a program."
+	${CC} ${CFLAGS} -o ${TARGET} ${OBJ} ${LIBDIRS} ${LIBS}
+
+clean :
+	@echo "Cleaning a program and any object file."
+	-rm ${OBJ} ${TARGET}
+
+#
+# dependencies
+#
+arp_send.o : arp_send.h
