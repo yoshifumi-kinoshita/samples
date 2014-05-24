@@ -21,7 +21,7 @@ module_param(devone_major, uint, 0);
 
 static int devone_open(struct inode *inode, struct file *file)
 {
-	printk("%s: major %d (pid %d)\n", __func__,
+	printk("%s: major %d minor %d (pid %d)\n", __func__,
 		imajor(inode),
 		iminor(inode),
 		current->pid
