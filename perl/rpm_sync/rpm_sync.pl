@@ -54,21 +54,37 @@ sub rpm_qa{
 sub compare_install_update{
 	chdir $DESTDIR;
 	my $YUMOPT='-y --disablerepo=* ';
+	my @installs;
+	my @updates;
+	my @downgrades;
 	my $fh;
 	open($fh, 'ls *.rpm |');
 	while(<$fh>){
+		chomp;
 		m/^(.*)-([^-]+-[^-]+).rpm$/;
 		# "%{VERSION}-%{RELEASE}.%{ARCH}"
 		if($rpm_qa{$1} eq ''){
-			print "yum $YUMOPT install $_"; 
-			print `yum $YUMOPT install $_`;
+			push @installs, $_;
 		} elsif( 1 == ($2 cmp $rpm_qa{$1}) ){
-			print "yum $YUMOPT update $_"; 
-			print `yum $YUMOPT update $_`;
+			push @updates, $_;
 		} elsif( -1 == ($2 cmp $rpm_qa{$1}) ){
-			print "yum $YUMOPT update --downgrade $_"; 
-			print `yum $YUMOPT update --downgrade$_`;
+			push @downgrades, $_;
 		}
+	}
+	if(@downgrades){
+		my $yum_downgrade = "yum downgrade $YUMOPT ". join " ",@downgrades;
+		print $yum_downgrade, "\n";
+		print `$yum_downgrade`;
+	}
+	if(@installs){
+		my $yum_install = "yum install $YUMOPT " . join " ", @installs;
+		print $yum_install, "\n";
+		print `$yum_install`;
+	}
+	if(@updates){
+		my $yum_update = "yum update $YUMOPT " . join " ", @updates;
+		print $yum_update, "\n";
+		print `$yum_update`;
 	}
 	close $fh;
 }
