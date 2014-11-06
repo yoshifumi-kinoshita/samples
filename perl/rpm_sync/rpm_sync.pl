@@ -26,6 +26,7 @@ rpm_qa();
 # compare and install or update RPMs.
 compare_install_update();
 
+die 'Please delete "/etc/yum.repos.d/rpm_sync.repo" and "/var/tmp/rpm_sync".';
 
 sub download_rpms{
 	my $installed_rpms = shift;
@@ -117,7 +118,7 @@ sub install_createrepo{
 [rpm_sync]
 name=rpm_sync
 baseurl=file://$DESTDIR
-enabled=1
+enabled=0
 gpgcheck=0
 
 EOF
