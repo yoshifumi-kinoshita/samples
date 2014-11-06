@@ -11,10 +11,13 @@ sub usage{
 
 usage unless $ARGV[0];
 
-my $DESTDIR="rpm_sync";
+my $DESTDIR="/var/tmp/rpm_sync";
 my %rpm_qa; #"{%NAME}"=>"%{VERSION}-%{RELEASE}.%{ARCH}"
 
 download_rpms($ARGV[0]);
+
+# create local repo
+install_createrepo();
 
 rpm_qa();
 
@@ -103,5 +106,24 @@ sub my_cmp{
 		return $result if( $result );
 	}
 	return 1;
+}
+
+sub install_createrepo{
+	`yum install -y createrepo`;
+	my $fh;
+	my $RPM_SYNC_REPO='/etc/yum.repos.d/rpm_sync.repo';
+	open($fh, ">$RPM_SYNC_REPO") || die "can't open $RPM_SYNC_REPO";
+	my $repo=<<EOF
+[rpm_sync]
+name=rpm_sync
+baseurl=file://$DESTDIR
+enabled=1
+gpgcheck=0
+
+EOF
+	;
+	print $fh $repo;
+	close $fh;
+	`createrepo $DESTDIR`;
 }
 
