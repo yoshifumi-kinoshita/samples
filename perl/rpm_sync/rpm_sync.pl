@@ -26,7 +26,7 @@ rpm_qa();
 # compare and install or update RPMs.
 compare_install_update();
 
-die 'Please delete "/etc/yum.repos.d/rpm_sync.repo" and "/var/tmp/rpm_sync".';
+print qq(\n === Please delete "/etc/yum.repos.d/rpm_sync.repo" and "/var/tmp/rpm_sync". === \n);
 
 sub download_rpms{
 	my $installed_rpms = shift;
