@@ -56,7 +56,7 @@ sub rpm_qa{
 
 sub compare_install_update{
 	chdir $DESTDIR;
-	my $YUMOPT='-y --disablerepo=* ';
+	my $YUMOPT='-y --disablerepo=* --enablerepo=rpm_sync';
 	my @installs;
 	my @updates;
 	my @downgrades;
@@ -102,7 +102,7 @@ sub my_cmp{
 	@a = split /[\-\._]/, $a;
 	@b = split /[\-\._]/, $b;
 	for(my $i=0; $i<@a; $i++){
-		my $result = ($a[$i] cmp $b[$i]);
+		my $result = ($a[$i] <=> $b[$i]);
 		return $result if( $result );
 	}
 	return 1;
