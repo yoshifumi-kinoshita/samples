@@ -65,9 +65,11 @@ sub compare_install_update{
 		# "%{VERSION}-%{RELEASE}.%{ARCH}"
 		if($rpm_qa{$1} eq ''){
 			push @installs, $_;
-		} elsif( 1 == ($2 cmp $rpm_qa{$1}) ){
+		#} elsif( 1 == ($2 cmp $rpm_qa{$1}) ){
+		} elsif( 1 == my_cmp($2, $rpm_qa{$1}) ){
 			push @updates, $_;
-		} elsif( -1 == ($2 cmp $rpm_qa{$1}) ){
+		#} elsif( -1 == ($2 cmp $rpm_qa{$1}) ){
+		} elsif( -1 == my_cmp($2, $rpm_qa{$1}) ){
 			push @downgrades, $_;
 		}
 	}
@@ -87,5 +89,19 @@ sub compare_install_update{
 		print `$yum_update`;
 	}
 	close $fh;
+}
+
+sub my_cmp{
+	my $a = shift;
+	my $b = shift;
+	my @a;
+	my @b;
+	@a = split /[\-\._]/, $a;
+	@b = split /[\-\._]/, $b;
+	for(my $i=0; $i<@a; $i++){
+		my $result = ($a[$i] cmp $b[$i]);
+		return $result if( $result );
+	}
+	return 1;
 }
 
