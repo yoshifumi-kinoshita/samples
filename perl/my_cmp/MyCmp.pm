@@ -3,13 +3,6 @@ package MyCmp;
 use strict;
 use Data::Dumper;
 
-sub split_name_ver_rel{
-	my($rpm) = @_;
-	$rpm =~ m/^(.*)-([^-]+)-([^-]+)$/;
-	return {name=>$1, ver=>$2, rel=>$3};
-}
-
-
 sub my_cmp{
         my($a,$b) = @_;
 
