@@ -37,7 +37,7 @@ sub download_rpms{
 		s/\s.*//g;
 		if($_ && !-e "$DESTDIR/$_.rpm"){
 			print "/usr/bin/yumdownloader --destdir=$DESTDIR $_", "\n";
-			print `/usr/bin/yumdownloader --destdir=$DESTDIR $_`;
+			`/usr/bin/yumdownloader --destdir=$DESTDIR $_`;
 		}
 	}
 	close $fh;
@@ -46,7 +46,7 @@ sub download_rpms{
 
 sub rpm_qa{
 	my $fh;
-	open($fh, 'rpm -qa --queryformat="%{NAME} %{VERSION}-%{RELEASE}.%{ARCH}\n" | sort |');	
+	open($fh, 'rpm -qa --queryformat="%{NAME}.%{ARCH} %{VERSION}-%{RELEASE}\n" | sort |');	
 	while(<$fh>){
 		m/(.*) (.*)/;
 		$rpm_qa{$1}="$2";
@@ -55,9 +55,11 @@ sub rpm_qa{
 	
 }
 
+
 sub compare_install_update{
 	chdir $DESTDIR;
 	my $YUMOPT='-y --disablerepo=* --enablerepo=rpm_sync';
+	#my $YUMOPT='-y --disablerepo=* ';
 	my @installs;
 	my @updates;
 	my @downgrades;
@@ -65,48 +67,39 @@ sub compare_install_update{
 	open($fh, 'ls *.rpm |');
 	while(<$fh>){
 		chomp;
-		m/^(.*)-([^-]+-[^-]+).rpm$/;
+		m/^(.*)-([^-]+-[^-]+)\.([0-9A-z_]+)\.rpm$/;
 		# "%{VERSION}-%{RELEASE}.%{ARCH}"
-		if($rpm_qa{$1} eq ''){
+		if($rpm_qa{"$1.$3"} eq ''){
 			push @installs, $_;
-		#} elsif( 1 == ($2 cmp $rpm_qa{$1}) ){
-		} elsif( 1 == my_cmp($2, $rpm_qa{$1}) ){
+                        print qq(yum install $YUMOPT $_ \n);
+                        `yum install $YUMOPT $_`;
+		} elsif( 1 == my_cmp($2, $rpm_qa{"$1.$3"}) ){
 			push @updates, $_;
-		#} elsif( -1 == ($2 cmp $rpm_qa{$1}) ){
-		} elsif( -1 == my_cmp($2, $rpm_qa{$1}) ){
+                        print qq(yum update $YUMOPT $_ \n);
+                        `yum update $YUMOPT $_`;
+		} elsif( -1 == my_cmp($2, $rpm_qa{"$1.$3"}) ){
 			push @downgrades, $_;
+                        print qq(yum downgrade $YUMOPT $_ \n);
+                        `yum downgrade $YUMOPT $_`;
 		}
 	}
+
 	if(@downgrades){
-		my $yum_downgrade = "yum downgrade $YUMOPT ". join " ",@downgrades;
-		print $yum_downgrade, "\n";
-		print `$yum_downgrade`;
+		my $yum_downgrade = "yum downgrade $YUMOPT ". join " ", @downgrades;
+		#print $yum_downgrade, "\n";
+		#`$yum_downgrade`;
 	}
 	if(@installs){
 		my $yum_install = "yum install $YUMOPT " . join " ", @installs;
-		print $yum_install, "\n";
-		print `$yum_install`;
+		#print $yum_install, "\n";
+		#`$yum_install`;
 	}
 	if(@updates){
 		my $yum_update = "yum update $YUMOPT " . join " ", @updates;
-		print $yum_update, "\n";
-		print `$yum_update`;
+		#print $yum_update, "\n";
+		#`$yum_update`;
 	}
 	close $fh;
-}
-
-sub my_cmp{
-	my $a = shift;
-	my $b = shift;
-	my @a;
-	my @b;
-	@a = split /[\-\._]/, $a;
-	@b = split /[\-\._]/, $b;
-	for(my $i=0; $i<@a; $i++){
-		my $result = ($a[$i] <=> $b[$i]);
-		return $result if( $result );
-	}
-	return 1;
 }
 
 sub install_createrepo{
@@ -126,5 +119,85 @@ EOF
 	print $fh $repo;
 	close $fh;
 	`createrepo $DESTDIR`;
+}
+
+sub split_ver_rel{
+        my($rpm) = @_;
+        $rpm =~ m/^([^-]+)-([^-]+)$/;
+        return {ver=>$1, rel=>$2};
+}
+
+sub my_cmp{
+        my $a_ver_rel = split_ver_rel( shift );
+        my $b_ver_rel = split_ver_rel( shift );
+
+        my @a_ver = split /\./,$a_ver_rel->{ver};
+        my @b_ver = split /\./,$b_ver_rel->{ver};
+
+        my $res = my_cmp_d( \@a_ver, \@b_ver );
+        if( $res ){
+                return $res;
+        }
+        else{
+                my @a_rel = split /\./,$a_ver_rel->{rel};
+                my @b_rel = split /\./,$b_ver_rel->{rel};
+                return my_cmp_d( \@a_rel, \@b_rel );
+        }
+}
+
+sub my_cmp_u{
+        my($arga, $argb) = @_; 
+        my $a = shift @$arga;
+        my $b = shift @$argb;
+
+        if(defined $a && !defined $b){
+                return 1;
+        }   
+        elsif(!defined $a && defined $b){
+                return -1; 
+        }
+        elsif(!defined $a && !defined $b){
+                return 0;
+        }   
+        
+        if( $a <=> $b ){
+                return $a <=> $b; 
+        }   
+        elsif( $a cmp $b ){
+                return $a cmp $b; 
+        }   
+        else {
+                return my_cmp_u($arga, $argb);
+        }
+}
+
+sub my_cmp_d{
+        my($arga, $argb) = @_;
+        my $a = shift @$arga;
+        my $b = shift @$argb;
+
+        if(defined $a && !defined $b){
+                return 1;
+        }
+        elsif(!defined $a && defined $b){
+                return -1;
+        }
+        elsif(!defined $a && !defined $b){
+                return 0;
+        }
+
+        my @a = split /_/, $a;
+        my @b = split /_/, $b;
+
+        my $res = my_cmp_u(\@a,\@b);
+        if( $res ){
+                return $res;
+        }
+        elsif( $a cmp $b ){
+                return $a cmp $b;
+        }
+        else {
+                return my_cmp_d($arga, $argb);
+        }
 }
 
