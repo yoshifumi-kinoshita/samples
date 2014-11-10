@@ -71,32 +71,29 @@ sub compare_install_update{
 		# "%{VERSION}-%{RELEASE}.%{ARCH}"
 		if($rpm_qa{"$1.$3"} eq ''){
 			push @installs, $_;
-                        print qq(yum install $YUMOPT $_ \n);
-                        `yum install $YUMOPT $_`;
+			`yum install $YUMOPT $_`;
 		} elsif( 1 == my_cmp($2, $rpm_qa{"$1.$3"}) ){
 			push @updates, $_;
-                        print qq(yum update $YUMOPT $_ \n);
-                        `yum update $YUMOPT $_`;
+			`yum update $YUMOPT $_`;
+		#} elsif( -1 == ($2 cmp $rpm_qa{$1}) ){
 		} elsif( -1 == my_cmp($2, $rpm_qa{"$1.$3"}) ){
+			print qq( $2   === $rpm_qa{"$1.$3"} \n);
 			push @downgrades, $_;
-                        print qq(yum downgrade $YUMOPT $_ \n);
-                        `yum downgrade $YUMOPT $_`;
 		}
 	}
-
 	if(@downgrades){
 		my $yum_downgrade = "yum downgrade $YUMOPT ". join " ", @downgrades;
-		#print $yum_downgrade, "\n";
+		print $yum_downgrade, "\n";
 		#`$yum_downgrade`;
 	}
 	if(@installs){
 		my $yum_install = "yum install $YUMOPT " . join " ", @installs;
-		#print $yum_install, "\n";
+		print $yum_install, "\n";
 		#`$yum_install`;
 	}
 	if(@updates){
 		my $yum_update = "yum update $YUMOPT " . join " ", @updates;
-		#print $yum_update, "\n";
+		print $yum_update, "\n";
 		#`$yum_update`;
 	}
 	close $fh;
