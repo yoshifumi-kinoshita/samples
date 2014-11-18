@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# If you use this on RHEL5, you need to install yum-utils for yumdownloader in advance.
+
 use strict;
 #use warnings;
 use Data::Dumper;
@@ -26,7 +28,14 @@ rpm_qa();
 # compare and install or update RPMs.
 compare_install_update();
 
-print qq(\n === Please delete "/etc/yum.repos.d/rpm_sync.repo" and "/var/tmp/rpm_sync". === \n);
+print qq(\n === Please delete "/etc/yum.repos.d/rpm_sync.repo" and "/var/tmp/rpm_sync". === \n\n);
+print q( rpm -qa --queryformat '%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort > /tmp/rpm-qa.txt );
+print qq(\n);
+print q( cat installed-rpms | perl -ne 's/\s+.*//g; print $_, "\n"' > /tmp/rpm-qa-remote.txt );
+print qq(\n\n);
+print q( diff /tmp/rpm-qa.txt /tmp/rpm-qa-remote.txt --side | less );
+print qq(\n);
+
 
 sub download_rpms{
 	my $installed_rpms = shift;
