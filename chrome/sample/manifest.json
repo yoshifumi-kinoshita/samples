@@ -1,0 +1,12 @@
+{
+  "name": "Sample",
+  "version": "1",
+  "manifest_version": 2,
+  "description": "This is sample",
+  "icons": {
+    "16" : "images/sample_16.png",
+    "48" : "images/sample_48.png",
+    "128" : "images/sample_128.png"
+  }
+}
+
