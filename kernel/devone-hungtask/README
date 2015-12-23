@@ -1,0 +1,8 @@
+make
+insmod devone.ko
+mknod /dev/devone c 247 0
+
+dd if=/dev/devone of=/dev/null count=1 bs=1
+
+ps auxwww
+
