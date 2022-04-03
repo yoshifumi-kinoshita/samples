@@ -1,0 +1,13 @@
+function my_func_hello:string (pid:long) %{
+  snprintf(STAP_RETVALUE, MAXSTRINGLEN, "%s", "hello");
+%}
+
+function my_func_long:long () %{
+  STAP_RETVALUE = 12345;
+%}
+
+probe module("ext2").function("ext2_delete_inode").return {
+  printf("ext2_delete_inode was called\n");
+  printf("i_size : %d\n", my_func_long());
+}
+

@@ -1,0 +1,4 @@
+probe module("ext2").function("*").return {
+  printf("caller : %s\n", caller());
+}
+
