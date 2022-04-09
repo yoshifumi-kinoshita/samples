@@ -1,0 +1,15 @@
+probe module("ext2").function("ext2_delete_inode").return {
+  printf(">> %s was called\n", ppfunc());
+
+  printf("=== vars ===\n");
+  printf("%s\n", $$vars$);
+
+  printf("=== locals ===\n");
+  printf("%s\n", $$locals$);
+
+  printf("=== parms ===\n");
+  printf("%s\n", $$parms$);
+
+  printf("<<\n\n\n");
+}
+

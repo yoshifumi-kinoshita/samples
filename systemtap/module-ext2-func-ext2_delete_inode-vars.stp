@@ -1,0 +1,5 @@
+probe module("ext2").function("ext2_delete_inode").return {
+  printf("ext2_delete_inode was called\n");
+  printf("%s\n", $$vars$$);
+}
+

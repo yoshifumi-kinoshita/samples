@@ -1,0 +1,16 @@
+probe kernel.function("sys_open") {
+  printf ("%s(%d)\n", execname(), pid())
+}
+
+probe kernel.function("sys_open").call {
+  printf (">>\n")
+}
+
+probe kernel.function("sys_open").return {
+  printf ("<<\n")
+}
+
+probe timer.ms(2000) {
+  exit ()
+}
+

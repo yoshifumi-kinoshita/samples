@@ -1,0 +1,4 @@
+probe kernel.function("sys_open") {
+  printf ("%s(%d)\n", execname(), pid())
+}
+
